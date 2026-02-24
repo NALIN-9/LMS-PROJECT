@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Black Board — Prototype Design</title>
+    <style>
+        :root {
+            --navy: #1e3a5f;
+            --blue: #2563eb;
+            --light-blue: #dbeafe;
+            --bg: #f4f7fb;
+            --white: #ffffff;
+            --border: #dde6f0;
+            --text: #1e2a3a;
+            --muted: #607d9a;
+            --red: #dc2626;
+            --purple: #7c3aed;
+            --amber: #b45309;
+            --green: #059669;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: var(--navy);
+            color: #fff;
+            padding: 18px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .header-sub {
+            font-size: 13px;
+            color: #a8c4e0;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+            color: #fff;
+            text-align: center;
+            padding: 72px 32px 56px;
+        }
+
+        .hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-title span {
+            color: #93c5fd;
+        }
+
+        .hero-sub {
+            font-size: 17px;
+            color: #bfdbfe;
+            max-width: 620px;
+            margin: 0 auto 12px;
+            line-height: 1.7;
+        }
+
+        .hero-meta {
+            font-size: 13px;
+            color: #93c5fd;
+            margin-bottom: 32px;
+        }
+
+        .hero-link {
+            display: inline-block;
+            background: #fff;
+            color: var(--navy);
+            padding: 13px 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 15px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            margin: 0 8px;
+        }
+
+        .hero-link.outline {
+            background: transparent;
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* ── SECTION ── */
+        .section {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 60px 32px;
+        }
+
+        .section-label {
+            display: inline-block;
+            background: var(--light-blue);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+
+        .section-desc {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ── APPLICATION FLOW ── */
+        .flow-wrap {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 40px 32px;
+            box-shadow: 0 2px 12px rgba(30, 58, 95, 0.06);
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0;
+            margin-bottom: 24px;
+        }
+
+        .flow-node {
+            background: #f0f6ff;
+            border: 2px solid #c3d9f0;
+            border-radius: 10px;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+            min-width: 120px;
+        }
+
+        .flow-node.accent {
+            background: var(--navy);
+            color: #fff;
+            border-color: var(--navy);
+        }
+
+        .flow-node.green {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #059669;
+        }
+
+        .flow-arrow {
+            color: var(--blue);
+            font-size: 22px;
+            padding: 0 10px;
+            user-select: none;
+        }
+
+        .flow-branches {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .flow-branch {
+            border-radius: 10px;
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 140px;
+            line-height: 1.5;
+            border: 2px solid;
+        }
+
+        .flow-branch.admin {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: var(--red);
+        }
+
+        .flow-branch.inst {
+            background: #f5f3ff;
+            border-color: #c4b5fd;
+            color: var(--purple);
+        }
+
+        .flow-branch.cc {
+            background: #fffbeb;
+            border-color: #fcd34d;
+            color: var(--amber);
+        }
+
+        .flow-branch.student {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: var(--green);
+        }
+
+        /* ── NAV MAP ── */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .nav-card {
+            background: var(--white);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 22px;
+            box-shadow: 0 2px 10px rgba(30, 58, 95, 0.06);
+        }
+
+        .nav-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-card-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .nav-card-email {
+            font-size: 11px;
+            color: var(--muted);
+            font-family: monospace;
+            margin-top: 2px;
+        }
+
+        .nav-items {
+            list-style: none;
+        }
+
+        .nav-items li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 0;
+            font-size: 13px;
+            color: #4a5f75;
+            border-bottom: 1px solid #f4f7fb;
+        }
+
+        .nav-items li:last-child {
+            border: none;
+        }
+
+        .nav-items li .nav-icon {
+            font-size: 15px;
+            width: 22px;
+            text-align: center;
+        }
+
+        .nav-badge-pill {
+            margin-left: auto;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        /* ── UI SCREENS ── */
+        .screens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .screen-card {
+            background: var(--white);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(30, 58, 95, 0.06);
+        }
+
+        .screen-thumb {
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .screen-thumb .s-icon {
+            font-size: 44px;
+        }
+
+        .screen-thumb .s-bar {
+            width: 80%;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .screen-foot {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #fafbfd;
+        }
+
+        .screen-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .screen-role {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        /* ── WORKFLOW ── */
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .wf-card {
+            background: var(--white);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(30, 58, 95, 0.06);
+        }
+
+        .wf-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+
+        .wf-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        .wf-steps {
+            list-style: none;
+            counter-reset: step;
+        }
+
+        .wf-steps li {
+            counter-increment: step;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 0;
+            font-size: 13px;
+            color: #4a5f75;
+            border-bottom: 1px solid #f4f7fb;
+        }
+
+        .wf-steps li:last-child {
+            border: none;
+        }
+
+        .wf-steps li::before {
+            content: counter(step);
+            min-width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--light-blue);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ── CREDENTIALS ── */
+        .cred-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .cred-card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(30, 58, 95, 0.05);
+        }
+
+        .cred-role {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .cred-field {
+            font-size: 10px;
+            color: #9eb5cc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .cred-value {
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--navy);
+            background: #f0f5fb;
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: block;
+            border: 1px solid var(--border);
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: 32px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .footer strong {
+            color: var(--navy);
+        }
+
+        .footer a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media print {
+
+            .header,
+            .hero {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <div class="header-title">📋 Digital Black Board — Prototype Design</div>
+        </div>
+        <div>
+            <div class="header-sub">LMS Platform · TEAM 18 · KL University</div>
+            <div class="header-sub" style="margin-top:2px">Tech Stack: React 19 + Vite 7 + JavaScript</div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-title">📚 <span>Digital Black Board</span></div>
+        <div class="hero-sub">A full-featured Learning Management System enabling institutions to manage courses, users,
+            assignments, announcements, and analytics through a role-based platform.</div>
+        <div class="hero-meta">4 Roles · 15+ Screens · Dark/Light Mode · Mobile Responsive</div>
+        <a class="hero-link" href="https://digital-blackboard.netlify.app" target="_blank">🚀 Live App</a>
+        <a class="hero-link" href="https://github.com/NALIN-9/LMS-PROJECT" target="_blank">📁 GitHub</a>
+ <a class="hero-link" href="https://www.linkedin.com/posts/nalin-kumar-kantamani-85ab62364_learning-prototype-deployment-ugcPost-7431535854730477568-TScD?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAFqVfEYB_sSjsP57LPYo13UygmPhgVTxu2k" target="_blank">🌐LinkedIn </a>
+    </div>
+
+    <!-- ═══════════════════════════════ 1. APPLICATION FLOW ═══════════════════════════════ -->
+    <div class="section">
+        <div class="section-label">Section 1</div>
+        <div class="section-title">Application Flow</div>
+        <div class="section-desc">How a user moves from first visit to their role-specific dashboard, including
+            authentication and navigation.</div>
+
+        <div class="flow-wrap">
+            <div class="flow-row">
+                <div class="flow-node accent">🌐 User Visits Site</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Auth Page<br><small style="color:var(--muted)">Login / Sign Up</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Authentication<br><small style="color:var(--muted)">Verify credentials</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node green"> Role Dashboard</div>
+            </div>
+
+            <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px;">↓ Directed to
+                role-specific dashboard</div>
+
+            <div class="flow-branches">
+                <div class="flow-branch admin">🔴 <strong>Admin</strong><br>Full platform control<br>Users · Courses ·
+                    Analytics</div>
+                <div class="flow-branch inst">🟣 <strong>Instructor</strong><br>Teaching tools<br>Courses · Assignments
+                </div>
+                <div class="flow-branch cc">🟡 <strong>Content Creator</strong><br>Media management<br>Content Library
+                </div>
+                <div class="flow-branch student">🟢 <strong>Student</strong><br>Learning journey<br>Enroll · Submit ·
+                    Progress</div>
+            </div>
+
+            <div
+                style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:32px;justify-content:center;flex-wrap:wrap;">
+                <div style="text-align:center;font-size:13px;">
+                    <div style="font-weight:700;color:var(--navy);margin-bottom:4px;">🔐 Sign Up Flow</div>
+                    <div style="color:var(--muted)">Select Role → Fill Details → Staff Code (if applicable) → Account
+                        Created</div>
+                </div>
+                <div style="text-align:center;font-size:13px;">
+                    <div style="font-weight:700;color:var(--navy);margin-bottom:4px;">🔑 Login Flow</div>
+                    <div style="color:var(--muted)">Enter Email → Enter Password → Authenticate → Dashboard</div>
+                </div>
+                <div style="text-align:center;font-size:13px;">
+                    <div style="font-weight:700;color:var(--navy);margin-bottom:4px;">🚪 Logout Flow</div>
+                    <div style="color:var(--muted)">Click Sign Out → Session Cleared → Auth Page</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ═══════════════════════════════ 2. UI SCREENS ═══════════════════════════════ -->
+    <div class="section">
+        <div class="section-label">Section 2</div>
+        <div class="section-title">UI Screens</div>
+        <div class="section-desc">All major screens in the application, organized by category and accessible role.</div>
+
+        <div class="screens-grid">
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);">
+                    <div class="s-icon">🔐</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Login Page</div>
+                    <span class="screen-role" style="background:#dbeafe;color:#1d4ed8">All</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#1e3a5f,#3b82c4);">
+                    <div class="s-icon">📝</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Sign Up — Role Picker</div>
+                    <span class="screen-role" style="background:#dbeafe;color:#1d4ed8">All</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);">
+                    <div class="s-icon">📊</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Admin Dashboard</div>
+                    <span class="screen-role" style="background:#fee2e2;color:#dc2626">Admin</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#581c87,#7c3aed);">
+                    <div class="s-icon">👥</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">User Management</div>
+                    <span class="screen-role" style="background:#ede9fe;color:#7c3aed">Admin</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#1e3a5f,#0369a1);">
+                    <div class="s-icon">📚</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Courses Page</div>
+                    <span class="screen-role" style="background:#e0f2fe;color:#0369a1">All</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#7f1d1d,#b91c1c);">
+                    <div class="s-icon">📝</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Assignments</div>
+                    <span class="screen-role" style="background:#fee2e2;color:#dc2626">All</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#064e3b,#059669);">
+                    <div class="s-icon">📢</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Announcements</div>
+                    <span class="screen-role" style="background:#d1fae5;color:#059669">All</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#78350f,#b45309);">
+                    <div class="s-icon">📈</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Analytics</div>
+                    <span class="screen-role" style="background:#fef3c7;color:#b45309">Admin</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#1e2a3a,#374151);">
+                    <div class="s-icon">⚙️</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Platform Settings</div>
+                    <span class="screen-role" style="background:#f1f5f9;color:#475569">Admin</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);">
+                    <div class="s-icon">ℹ️</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">About Us</div>
+                    <span class="screen-role" style="background:#dbeafe;color:#1d4ed8">All</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#064e3b,#047857);">
+                    <div class="s-icon">🎓</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Student Dashboard</div>
+                    <span class="screen-role" style="background:#d1fae5;color:#059669">Student</span>
+                </div>
+            </div>
+
+            <div class="screen-card">
+                <div class="screen-thumb" style="background:linear-gradient(135deg,#1e3a5f,#0284c7);">
+                    <div class="s-icon">🗃️</div>
+                    <div class="s-bar"></div>
+                </div>
+                <div class="screen-foot">
+                    <div class="screen-name">Content Library</div>
+                    <span class="screen-role" style="background:#fef3c7;color:#b45309">Creator</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ═══════════════════════════════ 3. NAVIGATION ═══════════════════════════════ -->
+    <div class="section">
+        <div class="section-label">Section 3</div>
+        <div class="section-title">Navigation</div>
+        <div class="section-desc">Role-based sidebar navigation — each role sees only the pages relevant to their access
+            level.</div>
+
+        <div class="nav-grid">
+
+            <!-- Admin -->
+            <div class="nav-card">
+                <div class="nav-card-header">
+                    <span style="font-size:24px">🔴</span>
+                    <div>
+                        <div class="nav-card-title" style="color:var(--red)">Admin</div>
+                        <div class="nav-card-email">admin@gmail.com</div>
+                    </div>
+                </div>
+                <ul class="nav-items">
+                    <li><span class="nav-icon">📊</span> Dashboard <span class="nav-badge-pill"
+                            style="background:#fef2f2;color:#dc2626">Home</span></li>
+                    <li><span class="nav-icon">👥</span> User Management</li>
+                    <li><span class="nav-icon">📚</span> All Courses</li>
+                    <li><span class="nav-icon">📝</span> Assignments</li>
+                    <li><span class="nav-icon">📢</span> Announcements</li>
+                    <li><span class="nav-icon">📈</span> Analytics</li>
+                    <li><span class="nav-icon">⚙️</span> Platform Settings</li>
+                    <li><span class="nav-icon">ℹ️</span> About Us</li>
+                    <li><span class="nav-icon">📞</span> Contact Us</li>
+                </ul>
+            </div>
+
+            <!-- Instructor -->
+            <div class="nav-card">
+                <div class="nav-card-header">
+                    <span style="font-size:24px">🟣</span>
+                    <div>
+                        <div class="nav-card-title" style="color:var(--purple)">Instructor</div>
+                        <div class="nav-card-email">ins@gmail.com</div>
+                    </div>
+                </div>
+                <ul class="nav-items">
+                    <li><span class="nav-icon">📊</span> Dashboard <span class="nav-badge-pill"
+                            style="background:#f5f3ff;color:#7c3aed">Home</span></li>
+                    <li><span class="nav-icon">📚</span> My Courses</li>
+                    <li><span class="nav-icon">📝</span> Assignments</li>
+                    <li><span class="nav-icon">📢</span> Announcements</li>
+                    <li><span class="nav-icon">ℹ️</span> About Us</li>
+                    <li><span class="nav-icon">📞</span> Contact Us</li>
+                </ul>
+            </div>
+
+            <!-- Content Creator -->
+            <div class="nav-card">
+                <div class="nav-card-header">
+                    <span style="font-size:24px">🟡</span>
+                    <div>
+                        <div class="nav-card-title" style="color:var(--amber)">Content Creator</div>
+                        <div class="nav-card-email">cc@gmail.com</div>
+                    </div>
+                </div>
+                <ul class="nav-items">
+                    <li><span class="nav-icon">📊</span> Dashboard <span class="nav-badge-pill"
+                            style="background:#fffbeb;color:#b45309">Home</span></li>
+                    <li><span class="nav-icon">🗃️</span> Content Library</li>
+                    <li><span class="nav-icon">📈</span> Performance</li>
+                    <li><span class="nav-icon">ℹ️</span> About Us</li>
+                    <li><span class="nav-icon">📞</span> Contact Us</li>
+                </ul>
+            </div>
+
+            <!-- Student -->
+            <div class="nav-card">
+                <div class="nav-card-header">
+                    <span style="font-size:24px">🟢</span>
+                    <div>
+                        <div class="nav-card-title" style="color:var(--green)">Student</div>
+                        <div class="nav-card-email">st@gmail.com</div>
+                    </div>
+                </div>
+                <ul class="nav-items">
+                    <li><span class="nav-icon">📊</span> Dashboard <span class="nav-badge-pill"
+                            style="background:#ecfdf5;color:#059669">Home</span></li>
+                    <li><span class="nav-icon">📚</span> Browse Courses</li>
+                    <li><span class="nav-icon">🎓</span> My Learning</li>
+                    <li><span class="nav-icon">📝</span> Assignments</li>
+                    <li><span class="nav-icon">📢</span> Announcements</li>
+                    <li><span class="nav-icon">📈</span> My Progress</li>
+                    <li><span class="nav-icon">ℹ️</span> About Us</li>
+                    <li><span class="nav-icon">📞</span> Contact Us</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ═══════════════════════════════ 4. FUNCTIONAL WORKFLOW ═══════════════════════════════ -->
+    <div class="section">
+        <div class="section-label">Section 4</div>
+        <div class="section-title">Functional Workflow</div>
+        <div class="section-desc">Step-by-step operations for the core functions of the platform.</div>
+
+        <div class="workflow-grid">
+
+            <div class="wf-card">
+                <div class="wf-title">🔐 User Registration</div>
+                <div class="wf-sub">New user creates an account</div>
+                <ol class="wf-steps">
+                    <li>Visit the app and click "Create one"</li>
+                    <li>Select a role (Admin/Instructor/Creator/Student)</li>
+                    <li>Fill in Name, Email, Password, Confirm Password</li>
+                    <li>Enter Staff Code (for Instructor/Creator/Admin)</li>
+                    <li>Click "Create Account"</li>
+                    <li>Account created → auto-logged in to dashboard</li>
+                </ol>
+            </div>
+
+            <div class="wf-card">
+                <div class="wf-title">📚 Admin — Create Course</div>
+                <div class="wf-sub">Admin publishes a new course</div>
+                <ol class="wf-steps">
+                    <li>Log in as Admin</li>
+                    <li>Navigate to "All Courses" in sidebar</li>
+                    <li>Click "+ New Course" button</li>
+                    <li>Fill title, category, level, duration, description</li>
+                    <li>Set status to "Published"</li>
+                    <li>Click "Create Course" — course visible to students</li>
+                </ol>
+            </div>
+
+            <div class="wf-card">
+                <div class="wf-title">🎓 Student — Enroll in Course</div>
+                <div class="wf-sub">Student discovers and enrolls</div>
+                <ol class="wf-steps">
+                    <li>Log in as Student</li>
+                    <li>Go to "Browse Courses" in sidebar</li>
+                    <li>Click any published course card</li>
+                    <li>Review course details in the modal</li>
+                    <li>Click "Enroll Now — It's Free!"</li>
+                    <li>Course appears in "My Learning" tab</li>
+                </ol>
+            </div>
+
+            <div class="wf-card">
+                <div class="wf-title">📝 Assignment Workflow</div>
+                <div class="wf-sub">Full cycle: create → submit → grade</div>
+                <ol class="wf-steps">
+                    <li>Admin creates assignment for a course</li>
+                    <li>Enrolled students see it in "Assignments"</li>
+                    <li>Student writes answer and submits</li>
+                    <li>Notification sent to Admin/Instructor</li>
+                    <li>Admin views submission and enters score</li>
+                    <li>Student sees their grade and feedback</li>
+                </ol>
+            </div>
+
+            <div class="wf-card">
+                <div class="wf-title">👥 User Management</div>
+                <div class="wf-sub">Admin manages platform users</div>
+                <ol class="wf-steps">
+                    <li>Log in as Admin</li>
+                    <li>Go to "User Management"</li>
+                    <li>View all registered users in a table</li>
+                    <li>Add new user with role and password</li>
+                    <li>Edit/deactivate an existing user</li>
+                    <li>Delete user if needed (with confirmation)</li>
+                </ol>
+            </div>
+
+            <div class="wf-card">
+                <div class="wf-title">🗃️ Content Upload</div>
+                <div class="wf-sub">Content Creator uploads material</div>
+                <ol class="wf-steps">
+                    <li>Log in as Content Creator</li>
+                    <li>Navigate to "Content Library"</li>
+                    <li>Click "Add Content"</li>
+                    <li>Enter title, type (video/doc/pdf), and URL</li>
+                    <li>Select associated course</li>
+                    <li>Save — content visible in the library</li>
+                </ol>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- CREDENTIALS -->
+    <div class="section">
+        <div class="section-label">Login Credentials</div>
+        <div class="section-title">Test Accounts</div>
+        <div class="section-desc">Use these pre-seeded accounts to explore each role on the live prototype.</div>
+
+        <div class="cred-grid">
+            <div class="cred-card">
+                <div class="cred-role" style="color:var(--red)">🔴 Admin</div>
+                <div class="cred-field">Email</div><span class="cred-value">admin@gmail.com</span>
+                <div class="cred-field">Password</div><span class="cred-value">Admin@123</span>
+            </div>
+            <div class="cred-card">
+                <div class="cred-role" style="color:var(--purple)">🟣 Instructor</div>
+                <div class="cred-field">Email</div><span class="cred-value">ins@gmail.com</span>
+                <div class="cred-field">Password</div><span class="cred-value">ins@123</span>
+            </div>
+            <div class="cred-card">
+                <div class="cred-role" style="color:var(--amber)">🟡 Content Creator</div>
+                <div class="cred-field">Email</div><span class="cred-value">cc@gmail.com</span>
+                <div class="cred-field">Password</div><span class="cred-value">cc@123</span>
+            </div>
+            <div class="cred-card">
+                <div class="cred-role" style="color:var(--green)">🟢 Student</div>
+                <div class="cred-field">Email</div><span class="cred-value">st@gmail.com</span>
+                <div class="cred-field">Password</div><span class="cred-value">st@123</span>
+            </div>
+        </div>
+
+        <div
+            style="margin-top:20px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-wrap:wrap;gap:32px;">
+            <div>
+                <div class="cred-field" style="margin-bottom:6px">Prototype / Live App</div>
+                <a href="https://digital-blackboard.netlify.app" target="_blank"
+                    style="color:var(--blue);font-weight:600;font-size:14px;">https://digital-blackboard.netlify.app</a>
+            </div>
+            <div>
+                <div class="cred-field" style="margin-bottom:6px">Source Code</div>
+                <a href="https://github.com/NALIN-9/LMS-PROJECT" target="_blank"
+                    style="color:var(--blue);font-weight:600;font-size:14px;">https://github.com/NALIN-9/LMS-PROJECT</a>
+            </div>
+            <div>
+                <div class="cred-field" style="margin-bottom:6px">Staff Code (for non-student signup)</div>
+                <span style="font-family:monospace;font-size:14px;font-weight:700;color:var(--navy);">DBBLMS</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px">Digital Black Board — Learning
+            Management System</p>
+        <p style="margin-bottom:4px"><strong>TEAM 18</strong> · KL University</p>
+        <p>KANTAMANI NALIN KUMAR (2400030332) &nbsp;·&nbsp; GHANTA NAGA PRASANTH BABU (2400030196) &nbsp;·&nbsp; KARANAM
+            BHARGAV (2400031923)</p>
+        <p style="margin-top:10px">Guide: <strong>Dr. NAGARJUNA KARYEMSETTY</strong> &nbsp;·&nbsp; Built with React 19 +
+            Vite 7 + JavaScript</p>
+    </div>
+
+</body>
+
+</html>
