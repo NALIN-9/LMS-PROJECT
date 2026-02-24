@@ -196,11 +196,15 @@ export default function CoursesPage({ activePage, searchQuery = '' }) {
             {/* Header */}
             <div className="page-header">
                 <div>
-                    <div className="page-title">{isStaff ? 'My Courses' : 'Browse Courses'}</div>
+                    <div className="page-title">
+                        {isStaff ? 'My Courses' : (activeTab === 'enrolled' ? '🎓 My Learning' : '📚 Browse Courses')}
+                    </div>
                     <div className="page-subtitle">
                         {isStaff
                             ? `${visibleCourses.length} course${visibleCourses.length !== 1 ? 's' : ''} you created`
-                            : `${enrolledCourses.length} enrolled · ${visibleCourses.length} available`}
+                            : activeTab === 'enrolled'
+                                ? `${enrolledCourses.length} course${enrolledCourses.length !== 1 ? 's' : ''} you're enrolled in`
+                                : `${visibleCourses.length} courses available · ${enrolledCourses.length} enrolled`}
                     </div>
                 </div>
                 {isStaff && (
@@ -214,13 +218,14 @@ export default function CoursesPage({ activePage, searchQuery = '' }) {
             {isStudent && (
                 <div className="tabs">
                     <button className={`tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>
-                        All Courses
+                        📚 Browse All
                     </button>
                     <button className={`tab ${activeTab === 'enrolled' ? 'active' : ''}`} onClick={() => setActiveTab('enrolled')}>
-                        My Enrolled ({enrolledCourses.length})
+                        🎓 My Learning ({enrolledCourses.length})
                     </button>
                 </div>
             )}
+
 
             {/* Filters */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>

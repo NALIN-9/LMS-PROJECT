@@ -1,25 +1,65 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { ROLES, ROLE_COLORS, COURSE_THUMBS } from '../utils/constants';
 
 const AppContext = createContext();
 
+// ── Version: bump this to wipe old localStorage and re-seed ──────────────────
+const DB_VERSION = 'v3';
+
+// ── Built-in demo accounts ────────────────────────────────────────────────────
+const DEMO_USERS = [
+  { id: 1, name: 'Admin User', email: 'admin@gmail.com', password: 'Admin@123', role: ROLES.ADMIN, initials: 'AU', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+  { id: 2, name: 'John Instructor', email: 'ins@gmail.com', password: 'ins@123', role: 'Instructor', initials: 'JI', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+  { id: 3, name: 'Creative Sarah', email: 'cc@gmail.com', password: 'cc@123', role: 'Content Creator', initials: 'CS', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+  { id: 4, name: 'Student Sam', email: 'st@gmail.com', password: 'st@123', role: ROLES.STUDENT, initials: 'SS', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+];
+
+// ── Persistent state hook — syncs to localStorage ─────────────────────────────
+function usePersist(key, initialValue) {
+  const [state, setState] = useState(() => {
+    try {
+      const stored = localStorage.getItem('dbb_' + key);
+      return stored ? JSON.parse(stored) : initialValue;
+    } catch { return initialValue; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('dbb_' + key, JSON.stringify(state)); }
+    catch { /* quota exceeded — ignore */ }
+  }, [key, state]);
+  return [state, setState];
+}
+
 export function AppProvider({ children }) {
-  // ── All state starts EMPTY — no pre-seeded data ───────────────────────────
-  const [currentUser, setCurrentUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  // enrollments: { [courseId]: [userId, userId, ...] }
-  const [enrollments, setEnrollments] = useState({});
-  const [notifications, setNotifications] = useState([]);
-  const [contentItems, setContentItems] = useState([]);
-  const [platformSettings, setPlatformSettings] = useState({
+  // ── Version check: wipe old data and re-seed if version changed ───────────
+  useEffect(() => {
+    if (localStorage.getItem('dbb_version') !== DB_VERSION) {
+      // Clear all old dbb_* keys
+      Object.keys(localStorage).filter(k => k.startsWith('dbb_')).forEach(k => localStorage.removeItem(k));
+      // Seed demo users
+      localStorage.setItem('dbb_users', JSON.stringify(DEMO_USERS));
+      localStorage.setItem('dbb_version', DB_VERSION);
+      // Force reload so state re-initialises from the seeded data
+      window.location.reload();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── All state persisted to localStorage ───────────────────────────────────
+  const [currentUser, setCurrentUser] = usePersist('currentUser', null);
+  const [users, setUsers] = usePersist('users', DEMO_USERS);
+  const [courses, setCourses] = usePersist('courses', []);
+  const [assignments, setAssignments] = usePersist('assignments', []);
+  const [submissions, setSubmissions] = usePersist('submissions', []);
+  const [announcements, setAnnouncements] = usePersist('announcements', []);
+  const [enrollments, setEnrollments] = usePersist('enrollments', {});
+  const [notifications, setNotifications] = usePersist('notifications', []);
+  const [contentItems, setContentItems] = usePersist('contentItems', []);
+  const [platformSettings, setPlatformSettings] = usePersist('platformSettings', {
     contactEmail: 'admin@gmail.com',
     contactPhone: '9100260825',
     aboutText: 'Welcome to Digital Black Board, the premier platform for modern learning management! Here, you can empower yourself with our extensive catalog of courses.',
   });
+
 
   const notifyRoles = (targetRoles, message) => {
     // Only send if the current user is NOT the target (e.g. don't notify myself)
@@ -83,7 +123,10 @@ export function AppProvider({ children }) {
     return { user: newUser };
   };
 
-  const logout = () => setCurrentUser(null);
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('dbb_currentUser');
+  };
 
   // ── COURSES ───────────────────────────────────────────────────────────────
   // Each course stores `createdBy: adminId` so it is only visible to that admin.
