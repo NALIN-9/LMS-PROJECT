@@ -13,6 +13,10 @@ import SettingsPage from './pages/SettingsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ContentPage from './pages/ContentPage';
+import GamesPage from './pages/GamesPage';
+import CalendarPage from './pages/CalendarPage';
+import QuizPage from './pages/QuizPage';
+import MessagesPage from './pages/MessagesPage';
 import './index.css';
 
 function AppShell() {
@@ -41,7 +45,12 @@ function AppShell() {
     about: <AboutPage />,
     contact: <ContactPage />,
     content: <ContentPage />,
+    games: <GamesPage />,
+    calendar: <CalendarPage />,
+    quiz: <QuizPage />,
+    messages: <MessagesPage />,
   };
+
 
   return (
     <div className="app-layout">

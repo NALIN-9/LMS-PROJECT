@@ -264,6 +264,34 @@ const CSS = `
   .AUTH_welcome { display: none; }
   .AUTH_wedge { display: none; }
 }
+/* ── Light Mode Override ── */
+.AUTH_root.light-mode .AUTH_panel { background: #f8fafc; }
+.AUTH_root.light-mode .AUTH_field > label { color: #475569; }
+.AUTH_root.light-mode .AUTH_field input { color: #1e293b; border-bottom-color: #cbd5e1; }
+.AUTH_root.light-mode .AUTH_field input::placeholder { color: #94a3b8; }
+.AUTH_root.light-mode .AUTH_field input:focus { border-bottom-color: #00d4ff; }
+.AUTH_root.light-mode h2 { color: #1e293b !important; }
+.AUTH_root.light-mode p { color: #64748b !important; }
+.AUTH_root.light-mode .AUTH_switch { color: #64748b !important; }
+.AUTH_root.light-mode .AUTH_footer { color: #94a3b8 !important; }
+.AUTH_root.light-mode .AUTH_role_name { color: #1e293b !important; }
+.AUTH_root.light-mode .AUTH_role_desc { color: #64748b !important; }
+.AUTH_root.light-mode .AUTH_role { border-color: #e2e8f0; background: rgba(0,0,0,0.03); }
+.AUTH_root.light-mode .AUTH_brand_name { color: #1e293b !important; }
+.AUTH_root.light-mode .AUTH_brand_sub  { color: #94a3b8 !important; }
+.AUTH_root.light-mode .AUTH_err { background: rgba(239,68,68,0.08); }
+
+/* ── Theme Toggle Button ── */
+.AUTH_theme_btn {
+  position: absolute; top: 16px; right: 16px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; z-index: 10; transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+.AUTH_root.light-mode .AUTH_theme_btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1); }
+.AUTH_theme_btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
 `;
 
 /* ── Brand component ───────────────────────────────────────────────────────── */
@@ -308,6 +336,7 @@ function Field({ label, type, placeholder, value, onChange, showToggle, show, on
 export default function AuthPage({ onLogin, onSignup }) {
     const { login, register } = useApp();
     const [isSignup, setIsSignup] = useState(false);
+    const [lightMode, setLightMode] = useState(false);
 
     /* Login state */
     const [lEmail, setLEmail] = useState('');
@@ -394,8 +423,12 @@ export default function AuthPage({ onLogin, onSignup }) {
     );
 
     return (
-        <div className="AUTH_root">
+        <div className={`AUTH_root${lightMode ? ' light-mode' : ''}`} style={{ position: 'relative' }}>
             <style>{CSS}</style>
+            {/* Theme toggle */}
+            <button className="AUTH_theme_btn" onClick={() => setLightMode(m => !m)} title="Toggle theme">
+                {lightMode ? '🌙' : '☀️'}
+            </button>
             <div className={`AUTH_box${isSignup ? ' su' : ''}`}>
                 {/* ═══ LEFT: Form panel ═══════════════════════════════════════════ */}
                 <div className="AUTH_panel" key={isSignup ? (step === 1 ? 'su1' : 'su2') : 'li'}>

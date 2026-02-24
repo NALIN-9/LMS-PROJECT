@@ -1,22 +1,27 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ROLES } from '../utils/constants';
-import { BookOpen, LayoutDashboard, Users, BookMarked, FileText, Megaphone, BarChart2, Settings, LogOut, ChevronRight, GraduationCap, Star, Info, Phone } from 'lucide-react';
+import { BookOpen, LayoutDashboard, Users, BookMarked, FileText, Megaphone, BarChart2, Settings, LogOut, ChevronRight, GraduationCap, Star, Info, Phone, CalendarDays, Gamepad2, ClipboardCheck, Library, Mail } from 'lucide-react';
+
 
 const NAV_CONFIG = {
     [ROLES.ADMIN]: [
         {
             label: 'Overview', items: [
                 { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                { id: 'users', label: 'User Management', icon: Users, badge: null },
+                { id: 'users', label: 'User Management', icon: Users },
                 { id: 'courses', label: 'All Courses', icon: BookMarked },
                 { id: 'assignments', label: 'Assignments', icon: FileText },
+                { id: 'quiz', label: 'Quizzes', icon: ClipboardCheck },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone },
                 { id: 'analytics', label: 'Analytics', icon: BarChart2 },
             ],
         },
         {
-            label: 'System', items: [
+            label: 'Tools', items: [
+                { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+                { id: 'games', label: 'Study Games', icon: Gamepad2 },
+                { id: 'messages', label: 'Messages', icon: Mail },
                 { id: 'settings', label: 'Platform Settings', icon: Settings },
                 { id: 'about', label: 'About Us', icon: Info },
                 { id: 'contact', label: 'Contact Us', icon: Phone },
@@ -30,10 +35,14 @@ const NAV_CONFIG = {
                 { id: 'courses', label: 'Browse Courses', icon: BookMarked },
                 { id: 'my-courses', label: 'My Learning', icon: GraduationCap },
                 { id: 'assignments', label: 'Assignments', icon: FileText },
+                { id: 'quiz', label: 'Quizzes', icon: ClipboardCheck },
             ],
         },
         {
-            label: 'Community', items: [
+            label: 'Extras', items: [
+                { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+                { id: 'games', label: 'Study Games', icon: Gamepad2 },
+                { id: 'messages', label: 'Messages', icon: Mail },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone },
                 { id: 'analytics', label: 'My Progress', icon: BarChart2 },
                 { id: 'about', label: 'About Us', icon: Info },
@@ -47,10 +56,16 @@ const NAV_CONFIG = {
                 { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                 { id: 'courses', label: 'My Courses', icon: BookMarked },
                 { id: 'assignments', label: 'Assignments', icon: FileText },
+                { id: 'quiz', label: 'Quizzes', icon: ClipboardCheck },
+                { id: 'analytics', label: 'Analytics', icon: BarChart2 },
             ],
         },
         {
-            label: 'Community', items: [
+            label: 'Tools', items: [
+                { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+                { id: 'games', label: 'Study Games', icon: Gamepad2 },
+                { id: 'messages', label: 'Messages', icon: Mail },
+                { id: 'content', label: 'Content Library', icon: Library },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone },
                 { id: 'about', label: 'About Us', icon: Info },
                 { id: 'contact', label: 'Contact Us', icon: Phone },
@@ -61,11 +76,17 @@ const NAV_CONFIG = {
         {
             label: 'Creation', items: [
                 { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                { id: 'content', label: 'Content Library', icon: FileText },
+                { id: 'content', label: 'Content Library', icon: Library },
+                { id: 'courses', label: 'Course Catalog', icon: BookMarked },
+                { id: 'quiz', label: 'Quizzes', icon: ClipboardCheck },
             ],
         },
         {
-            label: 'Analytics & Support', items: [
+            label: 'Community & Tools', items: [
+                { id: 'announcements', label: 'Announcements', icon: Megaphone },
+                { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+                { id: 'games', label: 'Study Games', icon: Gamepad2 },
+                { id: 'messages', label: 'Messages', icon: Mail },
                 { id: 'analytics', label: 'Performance', icon: BarChart2 },
                 { id: 'about', label: 'About Us', icon: Info },
                 { id: 'contact', label: 'Contact Us', icon: Phone },
@@ -73,6 +94,7 @@ const NAV_CONFIG = {
         },
     ],
 };
+
 
 const ROLE_BADGE_COLORS = {
     [ROLES.ADMIN]: { bg: 'rgba(239,68,68,0.15)', color: '#f87171' },
@@ -82,10 +104,11 @@ const ROLE_BADGE_COLORS = {
 };
 
 export default function Sidebar({ activePage, setActivePage, onLogout }) {
-    const { currentUser } = useApp();
+    const { currentUser, unreadCount } = useApp();
     const [mobileOpen, setMobileOpen] = useState(false);
     const navSections = NAV_CONFIG[currentUser.role] || NAV_CONFIG[ROLES.STUDENT];
     const roleColor = ROLE_BADGE_COLORS[currentUser.role] || ROLE_BADGE_COLORS[ROLES.STUDENT];
+    const msgUnread = unreadCount();
 
     const handleNav = (id) => { setActivePage(id); setMobileOpen(false); };
 
@@ -127,17 +150,30 @@ export default function Sidebar({ activePage, setActivePage, onLogout }) {
                     {navSections.map(section => (
                         <div key={section.label}>
                             <div className="sidebar-section-label">{section.label}</div>
-                            {section.items.map(({ id, label, icon: Icon, badge }) => (
-                                <div
-                                    key={id}
-                                    className={`sidebar-nav-item ${activePage === id ? 'active' : ''}`}
-                                    onClick={() => handleNav(id)}
-                                >
-                                    {Icon && <Icon size={16} />}
-                                    {label}
-                                    {badge && <span className="nav-badge">{badge}</span>}
-                                </div>
-                            ))}
+                            {section.items.map(({ id, label, icon: Icon }) => {
+                                const liveCount = id === 'messages' && msgUnread > 0 ? msgUnread : null;
+                                return (
+                                    <div
+                                        key={id}
+                                        className={`sidebar-nav-item ${activePage === id ? 'active' : ''}`}
+                                        onClick={() => handleNav(id)}
+                                    >
+                                        {Icon && <Icon size={16} />}
+                                        {label}
+                                        {liveCount && (
+                                            <span style={{
+                                                marginLeft: 'auto', minWidth: 18, height: 18,
+                                                background: 'var(--danger)', color: '#fff',
+                                                borderRadius: 20, fontSize: 10, fontWeight: 800,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                padding: '0 5px',
+                                            }}>
+                                                {liveCount > 9 ? '9+' : liveCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     ))}
                 </nav>

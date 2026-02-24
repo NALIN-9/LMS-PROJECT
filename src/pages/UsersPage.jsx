@@ -72,7 +72,7 @@ function UserModal({ user, onClose, onSave, error }) {
 }
 
 export default function UsersPage({ searchQuery = '' }) {
-    const { users, updateUser, deleteUser, register } = useApp();
+    const { users, addUser, updateUser, deleteUser } = useApp();
     const [showModal, setShowModal] = useState(false);
     const [editUser, setEditUser] = useState(null);
     const [filterRole, setFilterRole] = useState('All');
@@ -209,9 +209,13 @@ export default function UsersPage({ searchQuery = '' }) {
                     onSave={data => {
                         if (editUser) {
                             updateUser(editUser.id, data);
+                            setShowModal(false); setEditUser(null);
                         } else {
-                            const result = register(data.name, data.email, data.password, data.role);
-                            if (result.error) { setAddError(result.error); return; }
+                            // Check for duplicate email
+                            const exists = users.find(u => u.email.toLowerCase() === data.email.toLowerCase());
+                            if (exists) { setAddError('A user with this email already exists.'); return; }
+                            if (!data.password || data.password.length < 6) { setAddError('Password must be at least 6 characters.'); return; }
+                            addUser({ name: data.name, email: data.email.toLowerCase().trim(), password: data.password, role: data.role, status: data.status || 'active' });
                             setAddError('');
                             setShowModal(false);
                         }

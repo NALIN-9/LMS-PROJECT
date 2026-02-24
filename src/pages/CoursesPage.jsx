@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { ROLES } from '../utils/constants';
-import { Plus, Edit2, Trash2, Search, Users, Clock, BookOpen, PlayCircle, X, Check, Lock } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Users, Clock, BookOpen, PlayCircle, X, Check, Lock, Star } from 'lucide-react';
+
 
 // ── Admin: Create / Edit Course Modal ─────────────────────────────────────────
 function CourseModal({ course, onClose, onSave }) {
@@ -157,7 +158,9 @@ export default function CoursesPage({ activePage, searchQuery = '' }) {
         addCourse, updateCourse, deleteCourse,
         getAdminCourses, getPublishedCourses, getEnrolledCourses,
         enrollStudent, isEnrolled,
+        getCourseRating, addRating, getUserRating,
     } = useApp();
+
 
     const [showModal, setShowModal] = useState(false);
     const [editCourse, setEditCourse] = useState(null);
@@ -292,12 +295,35 @@ export default function CoursesPage({ activePage, searchQuery = '' }) {
                                 <div className="course-card-body">
                                     <div className="course-card-category" style={{ color: 'var(--primary-light)' }}>{course.category}</div>
                                     <div className="course-card-title">{course.title}</div>
-                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
                                         {course.tags?.slice(0, 2).map(t => (
                                             <span key={t} className="badge badge-secondary" style={{ fontSize: 10 }}>{t}</span>
                                         ))}
                                         <span className="badge badge-neutral" style={{ fontSize: 10 }}>{course.level}</span>
                                     </div>
+
+                                    {/* Star Rating Row */}
+                                    {(() => {
+                                        const { avg, count } = getCourseRating(course.id);
+                                        const userRating = getUserRating(course.id);
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }} onClick={e => e.stopPropagation()}>
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <Star key={star} size={13}
+                                                        fill={star <= Math.round(avg || userRating?.stars || 0) ? '#fbbf24' : 'none'}
+                                                        color={star <= Math.round(avg || userRating?.stars || 0) ? '#fbbf24' : 'var(--text-muted)'}
+                                                        style={{ cursor: enrolled ? 'pointer' : 'default', transition: 'transform 0.15s' }}
+                                                        onClick={() => enrolled && addRating(course.id, star)}
+                                                        title={enrolled ? `Rate ${star} stars` : 'Enroll to rate'}
+                                                    />
+                                                ))}
+                                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                                    {count > 0 ? `${avg} (${count})` : 'No ratings'}
+                                                </span>
+                                            </div>
+                                        );
+                                    })()}
+
                                     <div className="course-card-footer">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
                                             <span><Users size={12} /> {course.students} students</span>
@@ -323,6 +349,7 @@ export default function CoursesPage({ activePage, searchQuery = '' }) {
                                     </div>
                                 </div>
                             </div>
+
                         );
                     })}
                 </div>

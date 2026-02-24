@@ -4,14 +4,14 @@ import { ROLES, ROLE_COLORS, COURSE_THUMBS } from '../utils/constants';
 const AppContext = createContext();
 
 // ── Version: bump this to wipe old localStorage and re-seed ──────────────────
-const DB_VERSION = 'v3';
+const DB_VERSION = 'v4';
 
-// ── Built-in demo accounts ────────────────────────────────────────────────────
+// ── Built-in demo accounts ────────────────────────────────────────────────
 const DEMO_USERS = [
   { id: 1, name: 'Admin User', email: 'admin@gmail.com', password: 'Admin@123', role: ROLES.ADMIN, initials: 'AU', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
-  { id: 2, name: 'John Instructor', email: 'ins@gmail.com', password: 'ins@123', role: 'Instructor', initials: 'JI', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
-  { id: 3, name: 'Creative Sarah', email: 'cc@gmail.com', password: 'cc@123', role: 'Content Creator', initials: 'CS', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
-  { id: 4, name: 'Student Sam', email: 'st@gmail.com', password: 'st@123', role: ROLES.STUDENT, initials: 'SS', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+  { id: 2, name: 'Bhargav', email: 'ins@gmail.com', password: 'ins@123', role: 'Instructor', initials: 'BH', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+  { id: 3, name: 'Prasanth', email: 'cc@gmail.com', password: 'cc@123', role: 'Content Creator', initials: 'PR', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
+  { id: 4, name: 'Kumar', email: 'st@gmail.com', password: 'st@123', role: ROLES.STUDENT, initials: 'KU', avatar: null, nameChanged: false, joined: '2025-01-01', status: 'active', courses: 0 },
 ];
 
 // ── Persistent state hook — syncs to localStorage ─────────────────────────────
@@ -30,21 +30,17 @@ function usePersist(key, initialValue) {
 }
 
 export function AppProvider({ children }) {
-  // ── Version check: wipe old data and re-seed if version changed ───────────
-  useEffect(() => {
-    if (localStorage.getItem('dbb_version') !== DB_VERSION) {
-      // Clear all old dbb_* keys
-      Object.keys(localStorage).filter(k => k.startsWith('dbb_')).forEach(k => localStorage.removeItem(k));
-      // Seed demo users
-      localStorage.setItem('dbb_users', JSON.stringify(DEMO_USERS));
-      localStorage.setItem('dbb_version', DB_VERSION);
-      // Force reload so state re-initialises from the seeded data
-      window.location.reload();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Version check is now handled synchronously in main.jsx before React boots.
+  // forceReseed is still available for admin use if needed.
+  const forceReseed = () => {
+    Object.keys(localStorage).filter(k => k.startsWith('dbb_')).forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('dbb_users', JSON.stringify(DEMO_USERS));
+    localStorage.setItem('dbb_version', DB_VERSION);
+    window.location.reload();
+  };
 
   // ── All state persisted to localStorage ───────────────────────────────────
+
   const [currentUser, setCurrentUser] = usePersist('currentUser', null);
   const [users, setUsers] = usePersist('users', DEMO_USERS);
   const [courses, setCourses] = usePersist('courses', []);
@@ -54,7 +50,14 @@ export function AppProvider({ children }) {
   const [enrollments, setEnrollments] = usePersist('enrollments', {});
   const [notifications, setNotifications] = usePersist('notifications', []);
   const [contentItems, setContentItems] = usePersist('contentItems', []);
+  const [ratings, setRatings] = usePersist('ratings', []);          // [{id, courseId, userId, stars, review, date}]
+  const [courseProgress, setCourseProgress] = usePersist('courseProgress', {}); // {userId_courseId: {done: Set-as-array, total}}
+  const [quizzes, setQuizzes] = usePersist('quizzes', []);           // [{id, title, courseId, questions:[{q,options,answer}], createdBy}]
+  const [quizAttempts, setQuizAttempts] = usePersist('quizAttempts', []); // [{id, quizId, userId, score, total, date}]\r
+  const [certificates, setCertificates] = usePersist('certificates', []); // [{id, userId, courseId, date}]\r
+  const [messages, setMessages] = usePersist('messages', []);             // [{id, fromId, toId, subject, body, sentAt, readByTo}]\r
   const [platformSettings, setPlatformSettings] = usePersist('platformSettings', {
+
     contactEmail: 'admin@gmail.com',
     contactPhone: '9100260825',
     aboutText: 'Welcome to Digital Black Board, the premier platform for modern learning management! Here, you can empower yourself with our extensive catalog of courses.',
@@ -120,6 +123,7 @@ export function AppProvider({ children }) {
     };
     setUsers(prev => [...prev, newUser]);
     setCurrentUser(newUser);
+    notifyRoles(['Admin'], `New ${role} account created: ${name.trim()}`);
     return { user: newUser };
   };
 
@@ -201,6 +205,9 @@ export function AppProvider({ children }) {
       [courseId]: [...(prev[courseId] || []), userId],
     }));
     setCourses(prev => prev.map(c => c.id === courseId ? { ...c, students: (c.students || 0) + 1 } : c));
+    const course = courses.find(c => c.id === courseId);
+    notifyRoles(['Admin', 'Instructor'], `${currentUser?.name ?? 'A student'} enrolled in "${course?.title ?? 'a course'}"`);
+    notifyRoles([currentUser?.role ?? 'Student'], `You successfully enrolled in "${course?.title ?? 'the course'}". Start learning now!`);
   };
 
   const isEnrolled = (userId, courseId) =>
@@ -225,6 +232,7 @@ export function AppProvider({ children }) {
       createdAt: new Date().toISOString().split('T')[0],
     };
     setAssignments(prev => [newAssignment, ...prev]);
+    notifyRoles(['Admin', 'Instructor', 'Student'], `New assignment posted: "${title}" — due ${dueDate || 'TBD'}`);
     return newAssignment;
   };
 
@@ -232,6 +240,9 @@ export function AppProvider({ children }) {
     setAssignments(prev => prev.filter(a => a.id !== id));
     setSubmissions(prev => prev.filter(s => s.assignmentId !== id));
   };
+
+  const updateAssignment = (id, updates) =>
+    setAssignments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
 
   // ── SUBMISSIONS ───────────────────────────────────────────────────────────
 
@@ -260,8 +271,8 @@ export function AppProvider({ children }) {
     setAssignments(prev =>
       prev.map(a => a.id === assignmentId ? { ...a, submissions: a.submissions + 1 } : a)
     );
-    // Find the instructor of the course to notify them
-    notifyRoles(['Admin', 'Instructor'], `📝 ${studentName} submitted an answer for "${assignment?.title}"`);
+    notifyRoles(['Admin', 'Instructor'], `${studentName} submitted "${assignment?.title}"`);
+    notifyRoles([currentUser?.role ?? 'Student'], `Assignment "${assignment?.title}" submitted successfully!`);
     return { submission: newSub };
   };
 
@@ -272,14 +283,34 @@ export function AppProvider({ children }) {
       setAssignments(prev =>
         prev.map(a => a.id === sub.assignmentId ? { ...a, graded: a.graded + 1 } : a)
       );
+      // Notify the student who submitted
+      const student = users.find(u => u.id === sub.studentId);
+      if (student) {
+        notifyRoles([student.role], `Your assignment "${sub.assignmentTitle}" was graded — Score: ${score}/${assignments.find(a => a.id === sub.assignmentId)?.maxScore ?? score}`);
+      }
+      notifyRoles(['Admin', 'Instructor'], `Graded "${sub.assignmentTitle}" for ${sub.studentName} — ${score} pts`);
     }
   };
 
   // ── USERS (admin: manage all) ──────────────────────────────────────────────
 
-  const addUser = (user) => setUsers(prev => [{ ...user, id: Date.now(), initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase(), avatar: null, nameChanged: false, status: 'active', courses: 0 }, ...prev]);
-  const updateUser = (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-  const deleteUser = (id) => setUsers(prev => prev.filter(u => u.id !== id));
+  const addUser = (user) => {
+    const newU = { ...user, id: Date.now(), initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase(), avatar: null, nameChanged: false, status: 'active', courses: 0 };
+    setUsers(prev => [newU, ...prev]);
+    notifyRoles(['Admin'], `New user added: ${user.name} (${user.role})`);
+  };
+  const updateUser = (id, updates) => {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+    if (updates.status === 'inactive') {
+      const u = users.find(x => x.id === id);
+      if (u) notifyRoles(['Admin'], `Account deactivated: ${u.name}`);
+    }
+  };
+  const deleteUser = (id) => {
+    const u = users.find(x => x.id === id);
+    setUsers(prev => prev.filter(u => u.id !== id));
+    if (u) notifyRoles(['Admin'], `User account removed: ${u.name} (${u.role})`);
+  };
 
   const updateProfileName = (newName) => {
     if (!currentUser) return;
@@ -311,18 +342,104 @@ export function AppProvider({ children }) {
 
   // ── ANNOUNCEMENTS ─────────────────────────────────────────────────────────
 
-  const addAnnouncement = (ann) => setAnnouncements(prev => [{
-    ...ann,
-    id: Date.now(),
-    author: currentUser?.name,
-    role: currentUser?.role,
-    date: new Date().toISOString().split('T')[0],
-  }, ...prev]);
+  const addAnnouncement = (ann) => {
+    const newAnn = {
+      ...ann,
+      id: Date.now(),
+      author: currentUser?.name,
+      role: currentUser?.role,
+      date: new Date().toISOString().split('T')[0],
+    };
+    setAnnouncements(prev => [newAnn, ...prev]);
+    notifyRoles(['Admin', 'Instructor', 'Student', 'Content Creator'], `${currentUser?.name} posted: "${ann.title}"`);
+  };
+
+  // ── RATINGS ───────────────────────────────────────────────────────────────
+  const addRating = (courseId, stars, review = '') => {
+    setRatings(prev => {
+      const filtered = prev.filter(r => !(r.courseId === courseId && r.userId === currentUser.id));
+      return [...filtered, { id: Date.now(), courseId, userId: currentUser.id, stars, review, date: new Date().toISOString().split('T')[0] }];
+    });
+  };
+  const getCourseRating = (courseId) => {
+    const rs = ratings.filter(r => r.courseId === courseId);
+    if (!rs.length) return { avg: 0, count: 0 };
+    const avg = rs.reduce((s, r) => s + r.stars, 0) / rs.length;
+    return { avg: Math.round(avg * 10) / 10, count: rs.length };
+  };
+  const getUserRating = (courseId, userId) => ratings.find(r => r.courseId === courseId && r.userId === (userId ?? currentUser?.id));
+
+  // ── PROGRESS ──────────────────────────────────────────────────────────────
+  const markLessonDone = (courseId, lessonIndex) => {
+    const key = `${currentUser.id}_${courseId}`;
+    setCourseProgress(prev => {
+      const existing = prev[key]?.done ?? [];
+      const done = existing.includes(lessonIndex) ? existing : [...existing, lessonIndex];
+      return { ...prev, [key]: { done } };
+    });
+  };
+  const getCourseProgress = (userId, courseId) => {
+    const key = `${userId}_${courseId}`;
+    return courseProgress[key] ?? { done: [] };
+  };
+
+  // ── QUIZZES ───────────────────────────────────────────────────────────────
+  const addQuiz = (quiz) => {
+    const newQ = { ...quiz, id: Date.now(), createdBy: currentUser.id, createdAt: new Date().toISOString().split('T')[0] };
+    setQuizzes(prev => [newQ, ...prev]);
+    notifyRoles(['Admin', 'Instructor', 'Student', 'Content Creator'], `New quiz available: "${quiz.title}"${quiz.dueDate ? ` — due ${quiz.dueDate}` : ''}`);
+  };
+  const updateQuiz = (id, updates) => setQuizzes(prev => prev.map(q => q.id === id ? { ...q, ...updates } : q));
+  const deleteQuiz = (id) => setQuizzes(prev => prev.filter(q => q.id !== id));
+  const submitQuizAttempt = (quizId, score, total) => {
+    setQuizAttempts(prev => [...prev, { id: Date.now(), quizId, userId: currentUser.id, score, total, date: new Date().toISOString().split('T')[0] }]);
+    const quiz = quizzes.find(q => q.id === quizId);
+    const pct = Math.round(score / total * 100);
+    notifyRoles([currentUser.role], `Quiz "${quiz?.title ?? 'Quiz'}" submitted — Score: ${score}/${total} (${pct}%)`);
+    notifyRoles(['Admin', 'Instructor'], `${currentUser.name} completed quiz "${quiz?.title ?? 'Quiz'}" — ${pct}%`);
+  };
+  const getQuizAttempts = (quizId, userId) => quizAttempts.filter(a => a.quizId === quizId && a.userId === (userId ?? currentUser?.id));
+
+  // ── CERTIFICATES ──────────────────────────────────────────────────────────
+  const issueCertificate = (userId, courseId) => {
+    const exists = certificates.find(c => c.userId === userId && c.courseId === courseId);
+    if (!exists) setCertificates(prev => [...prev, { id: Date.now(), userId, courseId, date: new Date().toISOString().split('T')[0] }]);
+  };
+  const hasCertificate = (userId, courseId) => !!certificates.find(c => c.userId === userId && c.courseId === courseId);
+
+  // ── MESSAGES ───────────────────────────────────────────────────────────────
+  const sendMessage = (toId, subject, body) => {
+    const recipient = users.find(u => u.id === toId);
+    const newMsg = {
+      id: Date.now(),
+      fromId: currentUser.id,
+      fromName: currentUser.name,
+      fromRole: currentUser.role,
+      fromInitials: currentUser.initials,
+      toId,
+      toName: recipient?.name ?? 'Unknown',
+      subject: subject || '(No subject)',
+      body,
+      sentAt: new Date().toISOString(),
+      readByTo: false,
+      deletedBySender: false,
+      deletedByRecipient: false,
+    };
+    setMessages(prev => [newMsg, ...prev]);
+    notifyRoles([recipient?.role], `New message from ${currentUser.name}: "${subject || '(No subject)'}"`);
+  };
+  const markMessageRead = (id) => setMessages(prev => prev.map(m => m.id === id ? { ...m, readByTo: true } : m));
+  const deleteMessage = (id, asSender) => setMessages(prev =>
+    prev.map(m => m.id === id ? { ...m, ...(asSender ? { deletedBySender: true } : { deletedByRecipient: true }) } : m)
+  );
+  const getInbox = () => messages.filter(m => m.toId === currentUser?.id && !m.deletedByRecipient);
+  const getSent = () => messages.filter(m => m.fromId === currentUser?.id && !m.deletedBySender);
+  const unreadCount = () => getInbox().filter(m => !m.readByTo).length;
 
   return (
     <AppContext.Provider value={{
       // auth
-      currentUser, login, register, logout,
+      currentUser, login, register, logout, forceReseed,
       // users
       users, addUser, updateUser, deleteUser, updateUserAvatar, updateProfileName,
       // courses
@@ -338,10 +455,25 @@ export function AppProvider({ children }) {
       getAdminSubmissions,
       // announcements
       announcements, addAnnouncement,
+      // update assignment (for calendar deadline edits)
+      updateAssignment,
+
       // content items
       contentItems, addContent, updateContent, deleteContent,
       // notifications
       notifications, setNotifications,
+      // ratings
+      ratings, addRating, getCourseRating, getUserRating,
+      // progress
+      courseProgress, markLessonDone, getCourseProgress,
+      // quizzes
+      quizzes, addQuiz, updateQuiz, deleteQuiz,
+      quizAttempts, submitQuizAttempt, getQuizAttempts,
+      // certificates
+      certificates, issueCertificate, hasCertificate,
+      // messages / help
+      messages, sendMessage, markMessageRead, deleteMessage, getInbox, getSent, unreadCount,
+
       // constants
       ROLE_COLORS, COURSE_THUMBS,
       // platform config
