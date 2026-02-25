@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
+import { ROLES } from './utils/constants';
 import Sidebar from './components/Sidebar';
 import TopHeader from './components/TopHeader';
 import AuthPage from './pages/AuthPage';
@@ -21,6 +22,7 @@ import './index.css';
 
 function AppShell() {
   const { currentUser, logout } = useApp();
+  const canAccessQuiz = [ROLES.ADMIN, ROLES.STUDENT].includes(currentUser?.role);
   const [activePage, setActivePage] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -47,7 +49,7 @@ function AppShell() {
     content: <ContentPage />,
     games: <GamesPage />,
     calendar: <CalendarPage />,
-    quiz: <QuizPage />,
+    quiz: canAccessQuiz ? <QuizPage /> : <Dashboard />,
     messages: <MessagesPage />,
   };
 

@@ -56,14 +56,12 @@ const NAV_CONFIG = {
                 { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                 { id: 'courses', label: 'My Courses', icon: BookMarked },
                 { id: 'assignments', label: 'Assignments', icon: FileText },
-                { id: 'quiz', label: 'Quizzes', icon: ClipboardCheck },
                 { id: 'analytics', label: 'Analytics', icon: BarChart2 },
             ],
         },
         {
             label: 'Tools', items: [
                 { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-                { id: 'games', label: 'Study Games', icon: Gamepad2 },
                 { id: 'messages', label: 'Messages', icon: Mail },
                 { id: 'content', label: 'Content Library', icon: Library },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone },
@@ -78,14 +76,12 @@ const NAV_CONFIG = {
                 { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                 { id: 'content', label: 'Content Library', icon: Library },
                 { id: 'courses', label: 'Course Catalog', icon: BookMarked },
-                { id: 'quiz', label: 'Quizzes', icon: ClipboardCheck },
             ],
         },
         {
             label: 'Community & Tools', items: [
                 { id: 'announcements', label: 'Announcements', icon: Megaphone },
                 { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-                { id: 'games', label: 'Study Games', icon: Gamepad2 },
                 { id: 'messages', label: 'Messages', icon: Mail },
                 { id: 'analytics', label: 'Performance', icon: BarChart2 },
                 { id: 'about', label: 'About Us', icon: Info },
