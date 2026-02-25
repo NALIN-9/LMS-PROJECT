@@ -281,10 +281,14 @@ export default function QuizPage() {
     const [takeQuiz, setTakeQuiz] = useState(null);
     const [viewAttempts, setViewAttempts] = useState(null);
 
-    const myCourses = isStaff ? courses.filter(c => c.createdBy === currentUser.id || currentUser.role === ROLES.ADMIN) : getPublishedCourses();
+    const myCourses = isStaff
+        ? courses.filter(c => c.createdBy === currentUser.id || currentUser.role === ROLES.ADMIN)
+        : courses;
 
+    // Students see ALL quizzes (general + course-specific).
+    // Staff see only their own quizzes (admin sees all).
     const visibleQuizzes = isStudent
-        ? quizzes.filter(q => !q.courseId || myCourses.find(c => c.id === q.courseId))
+        ? quizzes   // all quizzes visible to students
         : quizzes.filter(q => currentUser.role === ROLES.ADMIN || q.createdBy === currentUser.id);
 
     const getCourseName = (id) => courses.find(c => c.id === id)?.title ?? 'General';
@@ -408,7 +412,11 @@ export default function QuizPage() {
             {showCreate && (
                 <QuizModal quiz={editQuiz} courses={myCourses}
                     onClose={() => { setShowCreate(false); setEditQuiz(null); }}
-                    onSave={data => editQuiz ? updateQuiz(editQuiz.id, data) : addQuiz(data)} />
+                    onSave={data => {
+                        // Coerce courseId to Number to avoid string/number type mismatch
+                        const normalized = { ...data, courseId: data.courseId ? Number(data.courseId) : null };
+                        editQuiz ? updateQuiz(editQuiz.id, normalized) : addQuiz(normalized);
+                    }} />
             )}
             {takeQuiz && (
                 <TakeQuizModal
