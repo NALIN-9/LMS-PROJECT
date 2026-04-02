@@ -15,13 +15,15 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 // Support both DATABASE_URL (cloud) and individual env vars (local)
 let poolConfig;
 
+const isCloud = process.env.DB_HOST && process.env.DB_HOST !== 'localhost';
+
 if (process.env.DATABASE_URL) {
-  // Cloud MySQL (Railway, PlanetScale, Aiven, etc.)
   poolConfig = {
     uri: process.env.DATABASE_URL,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    ssl: { rejectUnauthorized: false },
   };
 } else {
   poolConfig = {
@@ -34,6 +36,10 @@ if (process.env.DATABASE_URL) {
     connectionLimit: 10,
     queueLimit: 0,
   };
+  // Add SSL for cloud MySQL (Aiven, etc.)
+  if (isCloud) {
+    poolConfig.ssl = { rejectUnauthorized: false };
+  }
 }
 
 const pool = mysql.createPool(poolConfig);
