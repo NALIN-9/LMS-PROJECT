@@ -16,7 +16,7 @@ export default function LoginPage({ onLogin, onGoSignup }) {
         if (!email.trim() || !password) { setError('Please enter both email and password.'); return; }
         setLoading(true);
         await new Promise(r => setTimeout(r, 600));
-        const result = login(email.trim(), password);
+        const result = await login(email.trim(), password);
         setLoading(false);
         if (result.error) { setError(result.error); return; }
         onLogin();

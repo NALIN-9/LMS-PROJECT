@@ -23,84 +23,94 @@ function QuizModal({ quiz, courses, onClose, onSave }) {
 
     return (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-            <div className="modal" style={{ maxWidth: 700, maxHeight: '88vh', overflowY: 'auto' }}>
-                <div className="modal-header">
-                    <div className="modal-title">{quiz ? 'Edit Quiz' : 'Create Quiz'}</div>
+            <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: 660,
+                maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            }}>
+                {/* Sticky Header */}
+                <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-light)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="modal-title" style={{ fontSize: 20 }}>{quiz ? 'Edit Quiz' : 'Create Quiz'}</div>
                     <button className="modal-close" onClick={onClose}><X size={16} /></button>
                 </div>
 
-                {/* Basic info */}
-                <div className="form-group">
-                    <label className="form-label">Quiz Title *</label>
-                    <input className="form-input" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. JavaScript Basics Quiz" />
-                </div>
-                <div className="grid-2">
-                    <div className="form-group">
-                        <label className="form-label">Associated Course</label>
-                        <select className="form-select" value={courseId} onChange={e => setCourseId(e.target.value)}>
-                            <option value="">-- General --</option>
-                            {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                        </select>
+                {/* Scrollable Body */}
+                <div style={{ padding: '20px 28px', overflowY: 'auto', flex: 1 }}>
+                    {/* Basic info */}
+                    <div className="form-group" style={{ marginBottom: 14 }}>
+                        <label className="form-label" style={{ marginBottom: 5 }}>Quiz Title *</label>
+                        <input className="form-input" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. JavaScript Basics Quiz" />
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">Due Date (optional)</label>
-                        <input className="form-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
-                    </div>
-                </div>
-
-                {/* Settings */}
-                <div className="grid-2" style={{ marginBottom: 16 }}>
-                    <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: 14, border: '1px solid var(--border-light)' }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Retake Mode</div>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', marginBottom: 6 }}>
-                            <input type="radio" checked={allowRetake} onChange={() => setAllowRetake(true)} style={{ accentColor: 'var(--primary)' }} />
-                            <span>Allow Retakes (unlimited)</span>
-                        </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
-                            <input type="radio" checked={!allowRetake} onChange={() => setAllowRetake(false)} style={{ accentColor: 'var(--danger)' }} />
-                            <span style={{ color: 'var(--danger)' }}>One-Time Only — no retakes</span>
-                        </label>
-                    </div>
-                    <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: 14, border: '1px solid var(--border-light)' }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Time Limit</div>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', marginBottom: 6 }}>
-                            <input type="radio" checked={timeLimit === 0} onChange={() => setTimeLimit(0)} style={{ accentColor: 'var(--primary)' }} />
-                            No Time Limit
-                        </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
-                            <input type="radio" checked={timeLimit > 0} onChange={() => setTimeLimit(10)} style={{ accentColor: 'var(--primary)' }} />
-                            Timed:&nbsp;
-                            <input type="number" min="1" max="180"
-                                value={timeLimit > 0 ? timeLimit : ''}
-                                onChange={e => setTimeLimit(Number(e.target.value) || 1)}
-                                style={{ width: 55, background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 6, padding: '3px 6px', color: 'var(--text-primary)', fontSize: 13 }}
-                                disabled={timeLimit === 0}
-                            />
-                            &nbsp;min
-                        </label>
-                    </div>
-                </div>
-
-                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: 'var(--primary-light)' }}>Questions ({questions.length})</div>
-                {questions.map((q, qi) => (
-                    <div key={qi} style={{ background: 'var(--bg-surface)', borderRadius: 12, padding: 16, marginBottom: 12, border: '1px solid var(--border-light)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-light)' }}>Q{qi + 1}</span>
-                            {questions.length > 1 && <button onClick={() => removeQ(qi)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer' }}><Trash2 size={14} /></button>}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ marginBottom: 5 }}>Associated Course</label>
+                            <select className="form-select" value={courseId} onChange={e => setCourseId(e.target.value)}>
+                                <option value="">-- General --</option>
+                                {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                            </select>
                         </div>
-                        <input className="form-input" style={{ marginBottom: 10 }} value={q.q} onChange={e => updateQ(qi, 'q', e.target.value)} placeholder="Question text..." />
-                        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>Options (select the correct answer):</div>
-                        {q.options.map((opt, oi) => (
-                            <div key={oi} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
-                                <input type="radio" name={`q${qi}`} checked={q.answer === oi} onChange={() => updateQ(qi, 'answer', oi)} style={{ accentColor: 'var(--primary)', cursor: 'pointer' }} />
-                                <input className="form-input" style={{ flex: 1 }} value={opt} onChange={e => updateOpt(qi, oi, e.target.value)} placeholder={`Option ${oi + 1}`} />
-                            </div>
-                        ))}
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ marginBottom: 5 }}>Due Date (optional)</label>
+                            <input className="form-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+                        </div>
                     </div>
-                ))}
 
-                <button className="btn btn-secondary" onClick={addQ} style={{ width: '100%', marginBottom: 16 }}><Plus size={14} /> Add Question</button>
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                    {/* Settings — compact row */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+                        <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '10px 14px', border: '1px solid var(--border-light)' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Retake Mode</div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginBottom: 4 }}>
+                                <input type="radio" checked={allowRetake} onChange={() => setAllowRetake(true)} style={{ accentColor: 'var(--primary)' }} />
+                                <span>Allow Retakes</span>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
+                                <input type="radio" checked={!allowRetake} onChange={() => setAllowRetake(false)} style={{ accentColor: 'var(--danger)' }} />
+                                <span style={{ color: 'var(--danger)' }}>One-Time Only</span>
+                            </label>
+                        </div>
+                        <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '10px 14px', border: '1px solid var(--border-light)' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Time Limit</div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginBottom: 4 }}>
+                                <input type="radio" checked={timeLimit === 0} onChange={() => setTimeLimit(0)} style={{ accentColor: 'var(--primary)' }} />
+                                No Limit
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
+                                <input type="radio" checked={timeLimit > 0} onChange={() => setTimeLimit(10)} style={{ accentColor: 'var(--primary)' }} />
+                                Timed:
+                                <input type="number" min="1" max="180"
+                                    value={timeLimit > 0 ? timeLimit : ''}
+                                    onChange={e => setTimeLimit(Number(e.target.value) || 1)}
+                                    style={{ width: 50, background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 6, padding: '2px 6px', color: 'var(--text-primary)', fontSize: 12, textAlign: 'center' }}
+                                    disabled={timeLimit === 0}
+                                />
+                                <span>min</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: 'var(--primary-light)' }}>Questions ({questions.length})</div>
+                    {questions.map((q, qi) => (
+                        <div key={qi} style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '12px 14px', marginBottom: 10, border: '1px solid var(--border-light)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--primary-light)' }}>Q{qi + 1}</span>
+                                {questions.length > 1 && <button onClick={() => removeQ(qi)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: 2 }}><Trash2 size={13} /></button>}
+                            </div>
+                            <input className="form-input" style={{ marginBottom: 8, padding: '8px 12px', fontSize: 13 }} value={q.q} onChange={e => updateQ(qi, 'q', e.target.value)} placeholder="Question text..." />
+                            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>Options (select the correct answer):</div>
+                            {q.options.map((opt, oi) => (
+                                <div key={oi} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                                    <input type="radio" name={`q${qi}`} checked={q.answer === oi} onChange={() => updateQ(qi, 'answer', oi)} style={{ accentColor: 'var(--primary)', cursor: 'pointer' }} />
+                                    <input className="form-input" style={{ flex: 1, padding: '6px 10px', fontSize: 13 }} value={opt} onChange={e => updateOpt(qi, oi, e.target.value)} placeholder={`Option ${oi + 1}`} />
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+
+                    <button className="btn btn-secondary btn-sm" onClick={addQ} style={{ width: '100%', marginBottom: 4 }}><Plus size={13} /> Add Question</button>
+                </div>
+
+                {/* Sticky Footer */}
+                <div style={{ padding: '14px 28px', borderTop: '1px solid var(--border-light)', flexShrink: 0, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                     <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
                     <button className="btn btn-primary" disabled={!valid} onClick={() => {
                         onSave({ title, courseId: courseId || null, questions, allowRetake, timeLimit: Number(timeLimit), dueDate: dueDate || null });

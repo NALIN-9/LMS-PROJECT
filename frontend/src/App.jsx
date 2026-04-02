@@ -22,7 +22,7 @@ import './index.css';
 
 function AppShell() {
   const { currentUser, logout } = useApp();
-  const canAccessQuiz = [ROLES.ADMIN, ROLES.STUDENT].includes(currentUser?.role);
+  const canAccessQuiz = [ROLES.ADMIN, ROLES.STUDENT, ROLES.INSTRUCTOR, ROLES.CONTENT_CREATOR].includes(currentUser?.role);
   const [activePage, setActivePage] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 

@@ -365,7 +365,7 @@ export default function AuthPage({ onLogin, onSignup }) {
         if (!lEmail.trim() || !lPass) { setLErr('Please enter both email and password.'); return; }
         setLLoad(true);
         await new Promise(r => setTimeout(r, 500));
-        const res = login(lEmail.trim(), lPass);
+        const res = await login(lEmail.trim(), lPass);
         setLLoad(false);
         if (res.error) { setLErr(res.error); } else { onLogin(); }
     };
@@ -388,7 +388,7 @@ export default function AuthPage({ onLogin, onSignup }) {
         if (err) { setSErr(err); return; }
         setSLoad(true);
         await new Promise(r => setTimeout(r, 700));
-        const res = register({ name: sName, email: sEmail, password: sPass, role: selRole });
+        const res = await register({ name: sName, email: sEmail, password: sPass, role: selRole });
         setSLoad(false);
         if (res.error) { setSErr(res.error); return; }
         setSuccess(true);
