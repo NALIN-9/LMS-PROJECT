@@ -535,7 +535,7 @@ export default function AssignmentsPage() {
         assignments, addAssignment, deleteAssignment, updateAssignment,
         submitAssignment, gradeSubmission,
         getAdminCourses, getAdminAssignments, getAdminSubmissions,
-        getStudentAssignments, submissions,
+        getStudentAssignments, submissions, refreshData,
     } = useApp();
 
     const [activeTab, setActiveTab] = useState('assignments');
@@ -802,15 +802,10 @@ export default function AssignmentsPage() {
                     assignment={submittingAssignment}
                     currentUser={currentUser}
                     onClose={() => setSubmittingAssignment(null)}
-                    onSubmit={result => {
-                        // Also update local context so UI stays in sync
-                        submitAssignment(
-                            submittingAssignment.id,
-                            currentUser.id,
-                            currentUser.name,
-                            currentUser.initials,
-                            result.answer || '',
-                        );
+                    onSubmit={() => {
+                        // SubmitModal already calls the API — just close and refresh
+                        setSubmittingAssignment(null);
+                        refreshData();
                     }}
                 />
             )}
